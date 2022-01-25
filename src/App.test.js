@@ -1,22 +1,24 @@
-import { rest } from "msw";
-import { setupServer } from "msw/node";
 import Aztro from "./App.js";
-import { chooseSign } from "./App.js";
-import {render, screen} from '@testing-library/react'
+import { render, screen, fireEvent } from "@testing-library/react";
+import { post } from "./utils/api";
+import { mockData } from "./utils/mockData";
+jest.mock("./utils/api");
 
-const server = setupServer(
-  rest.get("https://aztro.sameerkumar.website", (req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ description: "lucky day today"}));
-  })
-);
+test("When Aries is click it should show Horoscope details", async () => {
+  post.mockImplementation(() => {
+    return mockData;
+  });
+  render(<Aztro />);
+  const ariesButtonElement = await screen.findByText(/Aries/i);
+  expect(ariesButtonElement).toBeInTheDocument();
 
-beforeAll(() => server.listen());
-afterAll(() => server.close());
-afterEach(() => server.resetHandlers());
+  // button element of Aries
+  fireEvent.click(ariesButtonElement);
+  const moodTextElement = await screen.findByText(/Relaxed/i);
+  expect(moodTextElement).toBeInTheDocument();
+});
 
-test("get data", async () => {
-  const horoscope = await chooseSign;
-  expect(horoscope).toEqual({ description: "lucky day today"})
-  //expect(await screen.findByText("lucky day today")).toBeInTheDocument()
-})
-
+// TODO
+//
+// When API sends errors, error details will show
+// When Gemini is click, it should show Horoscope details
